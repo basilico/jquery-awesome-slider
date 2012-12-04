@@ -1,0 +1,13 @@
+.awesome{ overflow: hidden; }
+.awesome .item { display: none; }
+.awesome.slide .item.show { display: block; }
+.awesome.fade .item.show { display: block; position: absolute; top: 0px; left: 0px; }
+
+.awesome .item.load { background: url('../images/loader.gif') 50% 50%; }
+.awesome .transition-box { position: relative; width: 200%; height: 100%; left: 0% }
+.awesome .transition-box .item { position: relative; width: 50%; height: 100%; float: left; }
+
+.awesome .bulletts{ position: absolute; z-index: 2; bottom: 0px; left: 0px; right: 0px; text-align: center; }
+.awesome .bulletts a { text-decoration: none;  color: #fff; font-size: 30px; margin: 0px 3px; }
+.awesome .bulletts a:hover,
+.awesome .bulletts a.selected { color: #ff0000; }
