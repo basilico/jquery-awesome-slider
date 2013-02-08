@@ -3,11 +3,16 @@
 .awesome.slide .item.show { display: block; }
 .awesome.fade .item.show { display: block; position: absolute; top: 0px; left: 0px; }
 
-.awesome .item.load { background: url('../images/loader.gif') 50% 50%; }
+.awesome .item.load { background: url('../images/loader.gif') 50% 50% no-repeat; }
 .awesome .transition-box { position: relative; width: 200%; height: 100%; left: 0% }
 .awesome .transition-box .item { position: relative; width: 50%; height: 100%; float: left; }
 
-.awesome .bulletts{ position: absolute; z-index: 2; bottom: 0px; left: 0px; right: 0px; text-align: center; }
-.awesome .bulletts a { text-decoration: none;  color: #fff; font-size: 30px; margin: 0px 3px; }
-.awesome .bulletts a:hover,
-.awesome .bulletts a.selected { color: #ff0000; }
+.awesome .bullets{ position: absolute; z-index: 2; bottom: 0px; left: 0px; right: 0px; text-align: center; }
+.awesome .bullets a { text-decoration: none;  color: #fff; font-size: 30px; margin: 0px 3px; }
+.awesome .bullets a:hover,
+.awesome .bullets a.selected { color: #ff0000; }
+
+.awesome .arrow { position: absolute; z-index: 10; top: 50%; background-repeat: no-repeat; }
+.awesome .arrow  { width: 64px; height: 64px; margin-top: -32px; }
+.awesome .arrow.left { background-image: url(../images/arrow-left.png); left: 5px; }
+.awesome .arrow.right { background-image: url(../images/arrow-right.png); right: 5px; }

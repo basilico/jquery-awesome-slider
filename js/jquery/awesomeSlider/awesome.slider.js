@@ -17,14 +17,41 @@
  (function($){
 
   var settings = {
-      'bulletts'      : true, 
-      'transition'    : 'slide',
+      'bullets'       : true,
+      'arrows'        : false, 
+      'transition'    : 'slide', //can be fade
       'infinite'      : true,
-      'speed'         : 800,
-      'easing'        : 'easeInOutCubic'
+      'speed'         : 400,
+      'easing'        : 'easeInOutExpo',
+      'gallery'       : false,
+      'resize'        : false,
+      'slideshow'     : 0
   };
 
   var $this;
+  var $items;
+  var timerSlideshow = null;
+
+  var helper = {
+    imageLoader: function($images, lazy, callback){
+      $images.each(function(){
+        var $img = $(this);
+        var src = lazy ? $img.attr('data-src') : $img.attr('src');
+
+        if (src !== undefined){
+          if (!lazy && $img[0].complete){ 
+            if (callback){ callback($img); } 
+          }else{
+            $img.addClass('loading').load(function(){
+              $img.removeAttr('loading');
+              if (lazy){ $img.removeAttr('data-src'); }
+              if (callback){ callback($img); }
+            }).attr('src', src);
+          }
+        }
+      });
+    }
+  };
 
   var methods = {
     init : function(options) { 
@@ -34,7 +61,12 @@
       $this.addClass('awesome ' + settings['transition']);
       
       /* we need to specific a position for parent and set overflow to hidden value */
-      if($this.css('position') === 'static'){ $this.css('position', 'relative'); }
+      if ($this.css('position') === 'static'){ $this.css('position', 'relative'); }
+
+      /* set up slider if user want to build a images gallery */
+      if (settings['gallery']){
+        methods.createGallery(true);
+      }
 
       /* set up slider when transition value is set to "slide" */
       if (settings['transition'] === 'slide'){
@@ -55,24 +87,71 @@
         $this.find('.item:first').addClass('show');
       }
 
-      if(settings['bulletts']){
-        methods.createBulletts();
+      $items = $this.find('.item');
+
+      /* load main images of the gallery to have a continuos effect */
+      if (settings['gallery']){
+        methods.createGallery(false);
       }
 
+      if (settings['bullets'] && settings['arrows']){
+        settings['bullets'] = false;
+      }
+
+      if(settings['bullets']){
+        methods.createBullets();
+      }
+
+      if(settings['arrows']){
+        methods.createArrows();
+      }
     },
 
-    createBulletts: function(){
-      var $bullettsContainer = $('<div class="bulletts" />');
-      var $items = $this.find('.item');
+    createArrows: function(){
+      var $arrowRight = $('<a href="#" class="arrow right" />');
+      var $arrowLeft = $('<a href="#" class="arrow left" />');
+      var startRight, startLeft;
+
+      $this.append($arrowRight);
+      $this.append($arrowLeft);
+
+      $this.find('.arrow').on('click', function(e){
+        e.preventDefault();
+
+        var $arrow;
+        var currentIndex, toShowIndex;
+
+        if (settings['transition'] === 'slide' && $this.find('.transition-box').is(':animated')){ return; }
+        if (settings['transition'] === 'fade' && $this.find('.item.show').is(':animated')){ return; }
+
+        $arrow = $(this);
+        currentIndex = $items.index($this.find('.item.show'));
+
+        if ($arrow.hasClass('right')){
+          toShowIndex =  currentIndex + 1;
+          if (settings['transition'] === 'slide' && toShowIndex === ($items.length - 1)){ toShowIndex = 1; }
+          if (settings['transition'] === 'fade' && toShowIndex === $items.length){ toShowIndex = 0; }
+        }else{
+          toShowIndex = currentIndex - 1;
+          if (settings['transition'] === 'slide' && toShowIndex === 0){ toShowIndex = $items.length - 2; }
+          if (settings['transition'] === 'fade' && toShowIndex < 0){ toShowIndex = $items.length - 1; }
+        }
+        
+        methods.showItem(toShowIndex);
+      });
+    },
+
+    createBullets: function(){
+      var $bulletsContainer = $('<div class="bullets" />');
       var start,end;
-      $this.append($bullettsContainer);
+      $this.append($bulletsContainer);
 
       start = settings['transition'] === 'slide' && settings['infinite'] ? 1 : 0;
       end = settings['transition'] === 'slide' && settings['infinite'] ? $items.length - 1 : $items.length;
 
       for (var i = start; i < end; i++){
         var $bullett = $('<a href="#" slide-to="' + i +'">&bull;</a>');
-        $bullettsContainer.append($bullett);
+        $bulletsContainer.append($bullett);
 
         $bullett.on('click', function(e){
           e.preventDefault();
@@ -81,14 +160,68 @@
             if (settings['transition'] === 'slide' && $this.find('.transition-box').is(':animated')){ return; }
             if (settings['transition'] === 'fade' && $this.find('.item.show').is(':animated')){ return; }
 
-            $('.bulletts a.selected').removeClass('selected');
+            $('.bullets a.selected').removeClass('selected');
             $(this).addClass('selected');
             methods.showItem(parseInt($(this).attr('slide-to')));
           }
         });
       }
 
-      $bullettsContainer.find('a:first').addClass('selected');
+      $bulletsContainer.find('a:first').addClass('selected');
+    },
+
+    createGallery: function(beforeLoad){
+      if (beforeLoad){
+        $this.find('img').css('opacity', 0).each(function(){
+          if ($(this).attr('data-src') !== undefined){
+            $(this).wrap('<div class="item load" />');
+          }
+        });
+      }else{
+        var $firstItem = $items.first();
+        var imagesFirstLoad = [
+            $firstItem,
+            $items.last()
+          ];
+
+        if ($items.length > 2){
+          imagesFirstLoad.push($firstItem.next());
+          if (settings['infinite']){ 
+            imagesFirstLoad.push($firstItem.next().next());
+            imagesFirstLoad.push($items.last().prev());  
+          }
+        }
+
+        for(var i = 0; i < imagesFirstLoad.length; i++){
+          helper.imageLoader(imagesFirstLoad[i].find('img'), true, function(img){
+            img.animate({ opacity: 1 }, settings.speed).parent().removeClass('load');
+          });
+        }
+      }
+    },
+
+    prevNextGalleryLoader: function($item){
+      var $prevItem = $item.prev();
+      var $prevNext = $item.next();
+
+      if ($item.hasClass('load') && !$item.hasClass('loading')){
+        helper.imageLoader($item.find('img'), true, function(img){
+          img.animate({ opacity: 1 }, settings.speed).parent().removeClass('load');
+        });
+      }
+
+      if ($prevItem.hasClass('load') && !$prevItem.hasClass('loading')){
+        helper.imageLoader($prevItem.find('img'), true, function(img){
+          img.animate({ opacity: 1 }, settings.speed).parent().removeClass('load');
+        });
+      };
+
+      if ($prevNext.hasClass('load') && !$prevItem.hasClass('loading')){
+        helper.imageLoader($prevNext.find('img'), true, function(img){
+          img.animate({ opacity: 1 }, settings.speed).parent().removeClass('load');
+        });
+      };
+
     },
 
     showItem: function(index){
@@ -122,6 +255,7 @@
             }, settings['speed'], settings['easing'], function(){
               $currentItem.removeClass('show');
               $(this).css('left', '0%');
+
               if (settings['infinite'] && toShowIndex === itemLength - 1){
                 $toShowItem.removeClass('show');
                 $this.find('.item:eq(1)').addClass('show');
@@ -131,12 +265,12 @@
             $this.find('.transition-box').css("left", "-100%").stop(false, true).animate({
                 left: '0%'
             }, settings['speed'], settings['easing'], function(){
-                $currentItem.removeClass('show');
+              $currentItem.removeClass('show');
 
-                if (settings['infinite'] && toShowIndex === 0){
-                  $toShowItem.removeClass('show');
-                  $this.find('.item:eq(' + ($this.find('.item').length - 2) + ')').addClass('show');
-                }
+              if (settings['infinite'] && toShowIndex === 0){
+                $toShowItem.removeClass('show');
+                $this.find('.item:eq(' + ($this.find('.item').length - 2) + ')').addClass('show');
+              }
             });
           }
 
@@ -148,6 +282,10 @@
           $toShowItem.stop(true,true).fadeIn(settings['speed'], settings['easing'], function(){
             $(this).addClass('show');
           });
+        }
+
+        if (settings['gallery']){
+          methods.prevNextGalleryLoader($toShowItem);
         }
       }
     }
