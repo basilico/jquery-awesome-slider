@@ -24,7 +24,7 @@
       'speed'         : 400,
       'easing'        : 'easeInOutExpo',
       'gallery'       : false,
-      'slideshow'     : 0
+      'slideshow'     : 0,
       'resize'        : false,
   };
 
@@ -107,6 +107,10 @@
       if(settings['arrows']){
         methods.createArrows();
       }
+
+      if(settings['slideshow']){
+        methods.createSlideShow();
+      }
     },
 
     createArrows: function(){
@@ -125,6 +129,8 @@
 
         if (settings['transition'] === 'slide' && $this.find('.transition-box').is(':animated')){ return; }
         if (settings['transition'] === 'fade' && $this.find('.item.show').is(':animated')){ return; }
+
+        if (timerSlideshow !== null){ clearTimeout(timerSlideshow); }
 
         $arrow = $(this);
         currentIndex = $items.index($this.find('.item.show'));
@@ -172,7 +178,9 @@
             if (settings['transition'] === 'slide' && $this.find('.transition-box').is(':animated')){ return; }
             if (settings['transition'] === 'fade' && $this.find('.item.show').is(':animated')){ return; }
 
-            $('.bullets a.selected').removeClass('selected');
+            if (timerSlideshow !== null){ clearTimeout(timerSlideshow); }
+
+            $bulletsContainer.find('a.selected').removeClass('selected');
             $(this).addClass('selected');
             methods.showItem(parseInt($(this).attr('slide-to')));
           }
@@ -236,6 +244,36 @@
         });
       };
 
+    },
+
+    createSlideShow: function(){
+      if (timerSlideshow !== null){ clearTimeout(timerSlideshow); }
+
+      timerSlideshow = setTimeout(function(){
+        var currentIndex, toShowIndex;
+
+        if (settings['transition'] === 'slide' && $this.find('.transition-box').is(':animated')){ return; }
+        if (settings['transition'] === 'fade' && $this.find('.item.show').is(':animated')){ return; }
+
+        currentIndex = $items.index($this.find('.item.show'));
+        toShowIndex =  currentIndex + 1;
+        if (settings['transition'] === 'slide' 
+              && settings['infinite']
+              && toShowIndex === ($items.length - 1)){ 
+                toShowIndex = 1; 
+              }else if(toShowIndex === $items.length){
+                toShowIndex = 0;
+              }
+        
+        if (settings['bullets']){
+            $this.find('.bullets a.selected').removeClass('selected');
+            $this.find('.bullets a[slide-to=' + toShowIndex + ']').addClass('selected');
+        }
+
+        methods.showItem(toShowIndex);
+        methods.createSlideShow();
+
+      }, settings['slideshow']);
     },
 
     showItem: function(index){
