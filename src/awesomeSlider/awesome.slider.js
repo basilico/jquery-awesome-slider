@@ -20,12 +20,12 @@
       'bullets'       : true,
       'arrows'        : false, 
       'transition'    : 'slide', //can be fade
-      'infinite'      : true,
+      'infinite'      : false,
       'speed'         : 400,
       'easing'        : 'easeInOutExpo',
       'gallery'       : false,
-      'resize'        : false,
       'slideshow'     : 0
+      'resize'        : false,
   };
 
   var $this;
@@ -131,12 +131,22 @@
 
         if ($arrow.hasClass('right')){
           toShowIndex =  currentIndex + 1;
-          if (settings['transition'] === 'slide' && toShowIndex === ($items.length - 1)){ toShowIndex = 1; }
-          if (settings['transition'] === 'fade' && toShowIndex === $items.length){ toShowIndex = 0; }
+          if (settings['transition'] === 'slide' 
+                && settings['infinite']
+                && toShowIndex === ($items.length - 1)){ 
+                  toShowIndex = 1; 
+                }else if(toShowIndex === $items.length){
+                  toShowIndex = 0;
+                }
         }else{
           toShowIndex = currentIndex - 1;
-          if (settings['transition'] === 'slide' && toShowIndex === 0){ toShowIndex = $items.length - 2; }
-          if (settings['transition'] === 'fade' && toShowIndex < 0){ toShowIndex = $items.length - 1; }
+          if (settings['transition'] === 'slide' 
+                && settings['infinite']
+                && toShowIndex === 0){ 
+                  toShowIndex = $items.length - 2; 
+                }else if(toShowIndex < 0){
+                  toShowIndex = $items.length - 1;
+                }
         }
         
         methods.showItem(toShowIndex);
@@ -198,7 +208,7 @@
 
         for(var i = 0; i < imagesFirstLoad.length; i++){
           helper.loadImage(imagesFirstLoad[i].find('img'), function(img){
-            img.animate({ opacity: 1 }, settings.speed).parent().removeClass('load');
+            img.animate({ opacity: 1 }, 'fast').parent().removeClass('load');
           });
         }
       }
@@ -210,19 +220,19 @@
 
       if ($item.hasClass('load') && !$item.hasClass('loading')){
         helper.loadImage($item.find('img'), function(img){
-          img.animate({ opacity: 1 }, settings.speed).parent().removeClass('load');
+          img.animate({ opacity: 1 }, 'fast').parent().removeClass('load');
         });
       }
 
       if ($prevItem.hasClass('load') && !$prevItem.hasClass('loading')){
         helper.loadImage($prevItem.find('img'), function(img){
-          img.animate({ opacity: 1 }, settings.speed).parent().removeClass('load');
+          img.animate({ opacity: 1 }, 'fast').parent().removeClass('load');
         });
       };
 
       if ($prevNext.hasClass('load') && !$prevItem.hasClass('loading')){
         helper.loadImage($prevNext.find('img'), function(img){
-          img.animate({ opacity: 1 }, settings.speed).parent().removeClass('load');
+          img.animate({ opacity: 1 }, 'fast').parent().removeClass('load');
         });
       };
 
