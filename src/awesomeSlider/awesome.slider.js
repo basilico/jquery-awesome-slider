@@ -373,6 +373,11 @@
                   toShowIndex = $items.length - 1;
                 }
         }
+
+        if (settings['bullets']){
+            $this.find('.bullets a.selected').removeClass('selected');
+            $this.find('.bullets a[slide-to=' + toShowIndex + ']').addClass('selected');
+        }
         
         methods.showItem(toShowIndex);
       });
