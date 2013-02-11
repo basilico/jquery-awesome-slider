@@ -20,19 +20,18 @@
       'bullets'       : true,
       'arrows'        : false, 
       'transition'    : 'slide', //can be fade
-      'infinite'      : false,
+      'loop'          : false,
       'speed'         : 400,
       'easing'        : 'easeInOutExpo',
-      'gallery'       : false,
       'slideshow'     : 0,
-      'resize'        : false,
+      'gallery'       : false //{ 'stretch' : false, 'fluid' : false }
   };
 
   var $this;
   var $items;
   var timerSlideshow = null;
 
-  var helper = {
+  var galleryMethods = {
     loadImage: function($images, callback){
       $images.each(function(){
         var $img = $(this);
@@ -52,6 +51,124 @@
           }
         }
       });
+    },
+
+    stretchImage: function($images){
+      $images.each(function(){
+        var $image = $(this);  
+        var parentWidth, parentHeight;
+        var deltaTop, deltaLeft;
+
+        parentWidth = $image.parent().width();
+        parentHeight = $image.parent().height();
+
+        $image
+          .css({ 'width': 'auto', 'marginTop': 0, 'marginLeft': 0 })
+          .height(parentHeight);
+
+        if ($image.width() < parentWidth){
+          $image.css({ 'width': '100%', 'height': 'auto'});
+        }
+
+        deltaTop = parentHeight - $image.height();
+        deltaLeft = parentWidth - $image.width();
+
+        $image.css({ 
+          'marginTop': deltaTop <= 0 ? (deltaTop / 2) : 0,
+          'marginLeft': deltaLeft <=0 ? (deltaLeft / 2) : 0
+        });
+      });
+    },
+
+    createGallery: function(beforeLoad){
+      if (beforeLoad){
+        $this.find('.item').each(function(){
+          var $image = $(this).find('img');
+          $image.css('opacity', 0);
+          if ($image.attr('data-src') !== undefined){
+            $(this).addClass('load');
+          }
+        });
+      }else{
+        var $firstItem = $items.first();
+        var imagesFirstLoad = [
+            $firstItem,
+            $items.last()
+          ];
+
+        if ($items.length > 2){
+          imagesFirstLoad.push($firstItem.next());
+          if (settings['loop']){ 
+            imagesFirstLoad.push($firstItem.next().next());
+            imagesFirstLoad.push($items.last().prev());  
+          }
+        }
+
+        for(var i = 0; i < imagesFirstLoad.length; i++){
+          galleryMethods.loadImage(imagesFirstLoad[i].find('img'), function(img){
+            galleryMethods.resizeGalleryImages(img);
+            img.animate({ opacity: 1 }, 'fast').parent().removeClass('load');
+          });
+        }
+      }
+    },
+
+    resizeGalleryImages: function($images){
+      $images.each(function(){     
+        var $image = $(this); 
+        var $parent = $image.parent();
+
+        var isImageStretch = false !== settings['gallery'] 
+              && undefined !== settings['gallery']['stretch'] 
+              && settings['gallery']['stretch'];
+
+        var isImageFluid = false !== settings['gallery'] 
+              && undefined !== settings['gallery']['fluid'] 
+              && settings['gallery']['fluid'];
+
+        if (isImageFluid){ $(window).off('resize'); }
+        
+        if (!$parent.hasClass('show')){ $parent.addClass('show-for-resize'); }
+        if (isImageStretch){ galleryMethods.stretchImage($image); }
+        if (!$parent.hasClass('show')){ $parent.removeClass('show-for-resize'); }
+
+        if (isImageFluid){ $(window).on('resize', galleryMethods.resizeGalleryHandler); }
+        
+      });
+    },
+
+    resizeGalleryHandler: function(){
+      setTimeout(function(){
+        $items.find('img').each(function(){
+          galleryMethods.resizeGalleryImages($(this));              
+        });
+      },200);
+    },
+
+    prevNextGalleryLoader: function($item){
+      var $prevItem = $item.prev();
+      var $prevNext = $item.next();
+
+      if ($item.hasClass('load') && !$item.hasClass('loading')){
+        galleryMethods.loadImage($item.find('img'), function(img){
+          galleryMethods.resizeGalleryImages(img);
+          img.animate({ opacity: 1 }, 'fast').parent().removeClass('load');
+        });
+      }
+
+      if ($prevItem.hasClass('load') && !$prevItem.hasClass('loading')){
+        galleryMethods.loadImage($prevItem.find('img'), function(img){
+          galleryMethods.resizeGalleryImages(img);
+          img.animate({ opacity: 1 }, 'fast').parent().removeClass('load');
+        });
+      };
+
+      if ($prevNext.hasClass('load') && !$prevItem.hasClass('loading')){
+        galleryMethods.loadImage($prevNext.find('img'), function(img){
+          galleryMethods.resizeGalleryImages(img);
+          img.animate({ opacity: 1 }, 'fast').parent().removeClass('load');
+        });
+      };
     }
   };
 
@@ -67,13 +184,13 @@
 
       /* set up slider if user want to build a images gallery */
       if (settings['gallery']){
-        methods.createGallery(true);
+        galleryMethods.createGallery(true);
       }
 
       /* set up slider when transition value is set to "slide" */
       if (settings['transition'] === 'slide'){
 
-        if (settings['infinite']){
+        if (settings['loop']){
           var $firstItemClone = $this.find('.item:first').clone();
           var $lastItemClone = $this.find('.item:last').clone();
           $this.append($firstItemClone);
@@ -82,7 +199,7 @@
 
         $this.wrapInner('<div class="transition-box" />');
 
-        $this.find('.item:eq(' + (settings['infinite'] ? 1 : 0) + ')').addClass('show');
+        $this.find('.item:eq(' + (settings['loop'] ? 1 : 0) + ')').addClass('show');
       }else{
         /* hide all elements but not the first*/
         $this.find('.item:gt(0)').hide();
@@ -93,7 +210,7 @@
 
       /* load main images of the gallery to have a continuos effect */
       if (settings['gallery']){
-        methods.createGallery(false);
+        galleryMethods.createGallery(false);
       }
 
       if (settings['bullets'] && settings['arrows']){
@@ -138,7 +255,7 @@
         if ($arrow.hasClass('right')){
           toShowIndex =  currentIndex + 1;
           if (settings['transition'] === 'slide' 
-                && settings['infinite']
+                && settings['loop']
                 && toShowIndex === ($items.length - 1)){ 
                   toShowIndex = 1; 
                 }else if(toShowIndex === $items.length){
@@ -147,7 +264,7 @@
         }else{
           toShowIndex = currentIndex - 1;
           if (settings['transition'] === 'slide' 
-                && settings['infinite']
+                && settings['loop']
                 && toShowIndex === 0){ 
                   toShowIndex = $items.length - 2; 
                 }else if(toShowIndex < 0){
@@ -164,8 +281,8 @@
       var start,end;
       $this.append($bulletsContainer);
 
-      start = settings['transition'] === 'slide' && settings['infinite'] ? 1 : 0;
-      end = settings['transition'] === 'slide' && settings['infinite'] ? $items.length - 1 : $items.length;
+      start = settings['transition'] === 'slide' && settings['loop'] ? 1 : 0;
+      end = settings['transition'] === 'slide' && settings['loop'] ? $items.length - 1 : $items.length;
 
       for (var i = start; i < end; i++){
         var $bullett = $('<a href="#" slide-to="' + i +'">&bull;</a>');
@@ -190,62 +307,6 @@
       $bulletsContainer.find('a:first').addClass('selected');
     },
 
-    createGallery: function(beforeLoad){
-      if (beforeLoad){
-        $this.find('.item').each(function(){
-          var $image = $(this).find('img');
-          $image.css('opacity', 0);
-          if ($image.attr('data-src') !== undefined){
-            $(this).addClass('load');
-          }
-        });
-      }else{
-        var $firstItem = $items.first();
-        var imagesFirstLoad = [
-            $firstItem,
-            $items.last()
-          ];
-
-        if ($items.length > 2){
-          imagesFirstLoad.push($firstItem.next());
-          if (settings['infinite']){ 
-            imagesFirstLoad.push($firstItem.next().next());
-            imagesFirstLoad.push($items.last().prev());  
-          }
-        }
-
-        for(var i = 0; i < imagesFirstLoad.length; i++){
-          helper.loadImage(imagesFirstLoad[i].find('img'), function(img){
-            img.animate({ opacity: 1 }, 'fast').parent().removeClass('load');
-          });
-        }
-      }
-    },
-
-    prevNextGalleryLoader: function($item){
-      var $prevItem = $item.prev();
-      var $prevNext = $item.next();
-
-      if ($item.hasClass('load') && !$item.hasClass('loading')){
-        helper.loadImage($item.find('img'), function(img){
-          img.animate({ opacity: 1 }, 'fast').parent().removeClass('load');
-        });
-      }
-
-      if ($prevItem.hasClass('load') && !$prevItem.hasClass('loading')){
-        helper.loadImage($prevItem.find('img'), function(img){
-          img.animate({ opacity: 1 }, 'fast').parent().removeClass('load');
-        });
-      };
-
-      if ($prevNext.hasClass('load') && !$prevItem.hasClass('loading')){
-        helper.loadImage($prevNext.find('img'), function(img){
-          img.animate({ opacity: 1 }, 'fast').parent().removeClass('load');
-        });
-      };
-
-    },
-
     createSlideShow: function(){
       if (timerSlideshow !== null){ clearTimeout(timerSlideshow); }
 
@@ -258,7 +319,7 @@
         currentIndex = $items.index($this.find('.item.show'));
         toShowIndex =  currentIndex + 1;
         if (settings['transition'] === 'slide' 
-              && settings['infinite']
+              && settings['loop']
               && toShowIndex === ($items.length - 1)){ 
                 toShowIndex = 1; 
               }else if(toShowIndex === $items.length){
@@ -289,7 +350,7 @@
 
         if (settings['transition'] === 'slide'){
 
-          if (settings['infinite']){  
+          if (settings['loop']){  
             if(currentIndex === itemLength - 2 && toShowIndex === 1){
               $toShowItem = $this.find('.item:last');
               toShowIndex = itemLength - 1;
@@ -308,7 +369,7 @@
               $currentItem.removeClass('show');
               $(this).css('left', '0%');
 
-              if (settings['infinite'] && toShowIndex === itemLength - 1){
+              if (settings['loop'] && toShowIndex === itemLength - 1){
                 $toShowItem.removeClass('show');
                 $this.find('.item:eq(1)').addClass('show');
               }
@@ -319,7 +380,7 @@
             }, settings['speed'], settings['easing'], function(){
               $currentItem.removeClass('show');
 
-              if (settings['infinite'] && toShowIndex === 0){
+              if (settings['loop'] && toShowIndex === 0){
                 $toShowItem.removeClass('show');
                 $this.find('.item:eq(' + ($this.find('.item').length - 2) + ')').addClass('show');
               }
@@ -337,7 +398,7 @@
         }
 
         if (settings['gallery']){
-          methods.prevNextGalleryLoader($toShowItem);
+          galleryMethods.prevNextGalleryLoader($toShowItem);
         }
       }
     }

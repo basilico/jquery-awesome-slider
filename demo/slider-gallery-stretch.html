@@ -20,7 +20,7 @@
 
   <body>
 
-    <div id="gallery" style="width: 500px; height: 300px;">
+    <div id="gallery" style="width: 980px; height: 600px;">
       <div class="item"><img data-src="images/slide-1.jpg" alt="" /></div>
       <div class="item"><img data-src="images/slide-3.jpg" alt="" /></div>
       <div class="item"><img data-src="images/slide-4.jpg" alt="" /></div>
@@ -46,12 +46,13 @@
   <script src="../src/awesomeSlider/awesome.slider.js"></script>
   <script>
     $('#gallery').awesomeSlider({
-      'bullets'   : true,
-      'loop'  : true,
-      'gallery'   : true,
-      'speed'     : 500,
-      'easing'    : 'easeInOutCubic',
-      'slideshow' : 5000
+      'arrows'   : true,
+      'loop' : true,
+      'speed' : 500,
+      'easing' : 'easeInOutCubic',
+      'gallery' : {
+          'stretch' : true
+        }
     });
   </script>
 

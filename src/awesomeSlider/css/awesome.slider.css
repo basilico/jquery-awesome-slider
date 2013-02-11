@@ -1,5 +1,6 @@
 .awesome{ overflow: hidden; }
-.awesome .item { display: none; }
+.awesome .item { display: none; overflow: hidden; }
+.awesome .item.show-for-resize { display: block; position: absolute; top: -9999px; left: -9999px; }
 .awesome.slide .item.show { display: block; }
 .awesome.fade .item.show { display: block; position: absolute; top: 0px; left: 0px; }
 
