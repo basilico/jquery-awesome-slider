@@ -24,7 +24,8 @@
       'speed'         : 400,
       'easing'        : 'easeInOutExpo',
       'slideshow'     : 0,
-      'gallery'       : false //{ 'stretch' : false, 'fluid' : false }
+      'gallery'       : false, //{ 'stretch' : false, 'fluid' : false },
+      'swipe'         : false
   };
 
   var $this;
@@ -228,6 +229,10 @@
       if(settings['slideshow']){
         methods.createSlideShow();
       }
+
+      if (settings['swipe']){ 
+        methods.addSwipeListener();
+      }
     },
 
     createArrows: function(){
@@ -335,6 +340,42 @@
         methods.createSlideShow();
 
       }, settings['slideshow']);
+    },
+
+    addSwipeListener: function(){
+      $this.hammer().bind("swipe", function(ev) {
+
+        var currentIndex, toShowIndex;
+
+        if (settings['transition'] === 'slide' && $this.find('.transition-box').is(':animated')){ return; }
+        if (settings['transition'] === 'fade' && $this.find('.item.show').is(':animated')){ return; }
+
+        if (timerSlideshow !== null){ clearTimeout(timerSlideshow); }
+
+        currentIndex = $items.index($this.find('.item.show'));
+
+        if (ev.direction === 'left'){
+          toShowIndex =  currentIndex + 1;
+          if (settings['transition'] === 'slide' 
+                && settings['loop']
+                && toShowIndex === ($items.length - 1)){ 
+                  toShowIndex = 1; 
+                }else if(toShowIndex === $items.length){
+                  toShowIndex = 0;
+                }
+        }else if (ev.direction === 'right'){
+          toShowIndex = currentIndex - 1;
+          if (settings['transition'] === 'slide' 
+                && settings['loop']
+                && toShowIndex === 0){ 
+                  toShowIndex = $items.length - 2; 
+                }else if(toShowIndex < 0){
+                  toShowIndex = $items.length - 1;
+                }
+        }
+        
+        methods.showItem(toShowIndex);
+      });
     },
 
     showItem: function(index){
