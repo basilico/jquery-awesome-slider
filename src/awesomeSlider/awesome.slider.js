@@ -20,6 +20,7 @@
       'bullets'       : true,
       'arrows'        : false, 
       'transition'    : 'slide', //can be fade
+      'vertical'      : false,
       'loop'          : false,
       'speed'         : 400,
       'easing'        : 'easeInOutExpo',
@@ -179,6 +180,9 @@
       settings = $.extend(settings, options);
 
       $this.addClass('awesome ' + settings['transition']);
+      if (settings['vertical']){
+        $this.addClass('vertical');
+      }
       
       /* we need to specific a position for parent and set overflow to hidden value */
       if ($this.css('position') === 'static'){ $this.css('position', 'relative'); }
@@ -346,16 +350,17 @@
       $this.hammer().bind("swipe", function(ev) {
 
         var currentIndex, toShowIndex;
+        var directions = settings['vertical'] ? ['up', 'down'] : ['left', 'right'];
 
         if (settings['transition'] === 'slide' && $this.find('.transition-box').is(':animated')){ return; }
         if (settings['transition'] === 'fade' && $this.find('.item.show').is(':animated')){ return; }
 
-        if (ev.direction === 'left' || ev.direction  === 'right') {
+        if (ev.direction === directions[0] || ev.direction  === directions[1]) {
           if (timerSlideshow !== null){ clearTimeout(timerSlideshow); }
 
           currentIndex = $items.index($this.find('.item.show'));
 
-          if (ev.direction === 'left'){
+          if (ev.direction === directions[0]){
             toShowIndex =  currentIndex + 1;
             if (settings['transition'] === 'slide' 
                   && settings['loop']
@@ -364,7 +369,7 @@
                   }else if(toShowIndex === $items.length){
                     toShowIndex = 0;
                   }
-          }else if (ev.direction === 'right'){
+          }else if (ev.direction === directions[1]){
             toShowIndex = currentIndex - 1;
             if (settings['transition'] === 'slide' 
                   && settings['loop']
@@ -398,6 +403,8 @@
 
         if (settings['transition'] === 'slide'){
 
+          var direction = settings['vertical'] ? 'top' : 'left';
+
           if (settings['loop']){  
             if(currentIndex === itemLength - 2 && toShowIndex === 1){
               $toShowItem = $this.find('.item:last');
@@ -412,10 +419,11 @@
 
           if(toShowIndex > currentIndex){
             $this.find('.transition-box').stop(false,true).animate({
-              left: '-100%'
+              top: settings['vertical'] ? '-100%' : '0%',
+              left: settings['vertical'] ? '0%' : '-100%'
             }, settings['speed'], settings['easing'], function(){
               $currentItem.removeClass('show');
-              $(this).css('left', '0%');
+              $(this).css(direction, '0%');
 
               if (settings['loop'] && toShowIndex === itemLength - 1){
                 $toShowItem.removeClass('show');
@@ -423,8 +431,9 @@
               }
             });
           }else{
-            $this.find('.transition-box').css("left", "-100%").stop(false, true).animate({
-                left: '0%'
+            $this.find('.transition-box').css(direction, '-100%').stop(false, true).animate({
+              top: '0%',
+              left: '0%'
             }, settings['speed'], settings['easing'], function(){
               $currentItem.removeClass('show');
 

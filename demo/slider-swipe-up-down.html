@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> 
+<html class="no-js"> <!--<![endif]-->
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <title></title>
+    <meta name="description" content="" />
+    <meta name="viewport" content="width=device-width" />
+
+    <link rel="shortcut icon" href="favicon.ico" />
+    <link rel="stylesheet" href="css/normalize.min.css" />
+    <link rel="stylesheet" href="css/layout.css" />
+    <link rel="stylesheet" href="../src/awesomeSlider/css/awesome.slider.css" />
+
+    <style>
+      html,body { height: 100%; }
+      #gallery { width: 100%; height: 100%; }
+    </style>
+
+  </head>
+
+  <body>
+
+    <div id="gallery">
+      <div class="item"><img data-src="images/slide-big-1.jpg" alt="" /></div>
+      <div class="item"><img data-src="images/slide-big-3.jpg" alt="" /></div>
+      <div class="item"><img data-src="images/slide-big-4.jpg" alt="" /></div>
+      <div class="item"><img data-src="images/slide-big-2.jpg" alt="" /></div>
+      <div class="item"><img data-src="images/slide-big-5.jpg" alt="" /></div>
+    </div>
+
+   
+  </body>
+
+  <script src="../src/jquery/jquery.min.js"></script>
+  <script src="../src/jquery/jquery.easing.min.js"></script>
+  <script src="../src/touch/hammer.js"></script>
+  <script src="../src/touch/jquery.hammer.js"></script>
+  <script src="../src/awesomeSlider/awesome.slider.js"></script>
+  <script>
+    $('#gallery').awesomeSlider({
+      'swipe' : true,
+      'loop' : true,
+      'speed' : 500,
+      'vertical' : true,
+      'easing' : 'easeInOutCubic',
+      'gallery' : {
+          'stretch' : true,
+          'fluid' : true
+        }
+    });
+  </script>
+
+</html>
