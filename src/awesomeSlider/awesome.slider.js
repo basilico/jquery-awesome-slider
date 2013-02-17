@@ -350,36 +350,38 @@
         if (settings['transition'] === 'slide' && $this.find('.transition-box').is(':animated')){ return; }
         if (settings['transition'] === 'fade' && $this.find('.item.show').is(':animated')){ return; }
 
-        if (timerSlideshow !== null){ clearTimeout(timerSlideshow); }
+        if (ev.direction === 'left' || ev.direction  === 'right') {
+          if (timerSlideshow !== null){ clearTimeout(timerSlideshow); }
 
-        currentIndex = $items.index($this.find('.item.show'));
+          currentIndex = $items.index($this.find('.item.show'));
 
-        if (ev.direction === 'left'){
-          toShowIndex =  currentIndex + 1;
-          if (settings['transition'] === 'slide' 
-                && settings['loop']
-                && toShowIndex === ($items.length - 1)){ 
-                  toShowIndex = 1; 
-                }else if(toShowIndex === $items.length){
-                  toShowIndex = 0;
-                }
-        }else if (ev.direction === 'right'){
-          toShowIndex = currentIndex - 1;
-          if (settings['transition'] === 'slide' 
-                && settings['loop']
-                && toShowIndex === 0){ 
-                  toShowIndex = $items.length - 2; 
-                }else if(toShowIndex < 0){
-                  toShowIndex = $items.length - 1;
-                }
+          if (ev.direction === 'left'){
+            toShowIndex =  currentIndex + 1;
+            if (settings['transition'] === 'slide' 
+                  && settings['loop']
+                  && toShowIndex === ($items.length - 1)){ 
+                    toShowIndex = 1; 
+                  }else if(toShowIndex === $items.length){
+                    toShowIndex = 0;
+                  }
+          }else if (ev.direction === 'right'){
+            toShowIndex = currentIndex - 1;
+            if (settings['transition'] === 'slide' 
+                  && settings['loop']
+                  && toShowIndex === 0){ 
+                    toShowIndex = $items.length - 2; 
+                  }else if(toShowIndex < 0){
+                    toShowIndex = $items.length - 1;
+                  }
+          }
+
+          if (settings['bullets']){
+              $this.find('.bullets a.selected').removeClass('selected');
+              $this.find('.bullets a[slide-to=' + toShowIndex + ']').addClass('selected');
+          }
+          
+          methods.showItem(toShowIndex);
         }
-
-        if (settings['bullets']){
-            $this.find('.bullets a.selected').removeClass('selected');
-            $this.find('.bullets a[slide-to=' + toShowIndex + ']').addClass('selected');
-        }
-        
-        methods.showItem(toShowIndex);
       });
     },
 
