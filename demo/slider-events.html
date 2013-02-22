@@ -28,8 +28,8 @@
       <div class="item"><img src="images/slide-5.jpg" alt="" /></div>
     </div>
 
-    <p id="before">Before show Message: <span></span></p>
-    <p id="after">After show Message: <span></span> </p>
+    <p id="before">Before show Message:<br/> <span></span></p>
+    <p id="after">After show Message:<br/> <span></span> </p>
 
    
   </body>
@@ -41,11 +41,11 @@
     $('#slider').awesomeSlider({
       'loop' : true,
       'onBeforeShow' : function($current, $next){
-        $('#before span').html('Current: ' + $('#slider .item').index($current) + ' Next ' + $('#slider .item').index($next) );
+        $('#before span').html('<b>Current:</b> ' + $current.find('img').attr('src') + '<br/><b>Next:</b> ' + $next.find('img').attr('src'));
       },
 
       'onAfterShow' : function($previous, $current){
-        $('#after span').html('Previous: ' + $('#slider .item').index($previous) + ' Current ' + $('#slider .item').index($current) );
+        $('#after span').html('<b>Previous:</b> ' + $previous.find('img').attr('src') + '<br/><b>Current:</b> ' + $current.find('img').attr('src') );
       },
 
     });
