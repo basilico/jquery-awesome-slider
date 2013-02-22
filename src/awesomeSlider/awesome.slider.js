@@ -28,7 +28,9 @@
       'gallery'       : false, //{ 'stretch' : false, 'fluid' : false },
       'swipe'         : false,
       'onBeforeShow'  : false,
-      'onAfterShow'   : false
+      'onAfterShow'   : false,
+      'tabs'          : false,
+      'hashchange'    : false
   };
 
   var $this;
@@ -194,6 +196,10 @@
         galleryMethods.createGallery(true);
       }
 
+      if (settings['hashchange'] || settings['tabs']){
+        settings['loop'] = false;
+      }
+
       /* set up slider when transition value is set to "slide" */
       if (settings['transition'] === 'slide'){
 
@@ -215,12 +221,16 @@
 
       $items = $this.find('.item');
 
+      if (settings['tabs']){
+        methods.createTabs();
+      }
+
       /* load main images of the gallery to have a continuos effect */
       if (settings['gallery']){
         galleryMethods.createGallery(false);
       }
 
-      if (settings['bullets'] && settings['arrows']){
+      if ((settings['bullets'] && settings['arrows']) || settings['hashchange'] || settings['tabs']){
         settings['bullets'] = false;
       }
 
@@ -238,6 +248,22 @@
 
       if (settings['swipe']){ 
         methods.addSwipeListener();
+      }
+
+      if (settings['hashchange']){
+        methods.addHashChangeListener();
+      }
+
+      if (settings['onBeforeShow'] && $.isFunction(settings['onBeforeShow'])){
+        $this.on('beforeShow', function(e, $current, $next){
+          settings['onBeforeShow']($current, $next);
+        });
+      }
+
+      if (settings['onAfterShow'] && $.isFunction(settings['onAfterShow'])){
+        $this.on('afterShow', function(e, $previous, $current){
+          settings['onAfterShow']($previous, $current);          
+        });
       }
     },
 
@@ -318,6 +344,29 @@
       $bulletsContainer.find('a:first').addClass('selected');
     },
 
+    createTabs: function(){
+      var $tabsContainer = $('<div class="tab" />');
+      $this.prepend($tabsContainer);
+      for (var i = 0; i < settings['tabs'].length; i++){
+        $tabsContainer.append($('<a href="#" slide-to="' + i + '">' + settings['tabs'][i] + '</a>'))
+      }
+
+      $tabsContainer.find('a:first').addClass('selected');
+      $tabsContainer.find('a').on('click', function(){
+        if (!$(this).hasClass('selected')){
+
+          if (settings['transition'] === 'slide' && $this.find('.transition-box').is(':animated')){ return; }
+          if (settings['transition'] === 'fade' && $this.find('.item.show').is(':animated')){ return; }
+
+          if (timerSlideshow !== null){ clearTimeout(timerSlideshow); }
+
+          $tabsContainer.find('a.selected').removeClass('selected');
+          $(this).addClass('selected');
+          methods.showItem(parseInt($(this).attr('slide-to')));
+        }
+      });
+    },
+
     createSlideShow: function(){
       if (timerSlideshow !== null){ clearTimeout(timerSlideshow); }
 
@@ -392,6 +441,16 @@
       });
     },
 
+    addHashChangeListener: function(){
+      $(window).hashchange(function(){
+        if ($this.find(location.hash).length > 0){
+          var toShowIndex = $items.index($this.find(location.hash));
+          if (timerSlideshow !== null){ clearTimeout(timerSlideshow); }
+          methods.showItem(toShowIndex);
+        }
+      }).hashchange();
+    },
+
     showItem: function(index){
       var $currentItem = $this.find('.item.show');
       var $toShowItem = $this.find('.item:eq(' + index + ')');
@@ -419,25 +478,23 @@
           
           $toShowItem.addClass('show');
 
-          if (settings['onBeforeShow'] && $.isFunction(settings['onBeforeShow'])){
-            var $toShowItemBefore = $toShowItem;
+          var $toShowItemBefore = $toShowItem;
 
-            if (settings['loop'] && toShowIndex === itemLength - 1){
-              $toShowItemBefore = $this.find('.item:eq(1)');
-            }
-
-            if (settings['loop'] && toShowIndex === 0){
-              $toShowItemBefore = $this.find('.item:eq(' + ($this.find('.item').length - 2) + ')');
-            }
-
-            settings['onBeforeShow']($currentItem, $toShowItemBefore);
+          if (settings['loop'] && toShowIndex === itemLength - 1){
+            $toShowItemBefore = $this.find('.item:eq(1)');
           }
 
+          if (settings['loop'] && toShowIndex === 0){
+            $toShowItemBefore = $this.find('.item:eq(' + ($this.find('.item').length - 2) + ')');
+          }
+
+          $this.trigger('beforeShow', [$currentItem, $toShowItemBefore]);
+
           if(toShowIndex > currentIndex){
-            $this.find('.transition-box').stop(false,true).animate({
-              top: settings['vertical'] ? '-100%' : '0%',
-              left: settings['vertical'] ? '0%' : '-100%'
-            }, settings['speed'], settings['easing'], function(){
+            var moveData = settings['vertical'] ? { top: '-100%' } : { left: '-100%' };
+
+            $this.find('.transition-box').stop(false,true).animate(
+              moveData, settings['speed'], settings['easing'], function(){
               $currentItem.removeClass('show');
               $(this).css(direction, '0%');
 
@@ -446,15 +503,13 @@
                 $this.find('.item:eq(1)').addClass('show');
               }
 
-              if (settings['onAfterShow'] && $.isFunction(settings['onAfterShow'])){
-                settings['onAfterShow']($currentItem, $this.find('.item.show'));
-              }
+              $this.trigger('afterShow', [$currentItem, $this.find('.item.show')]);
             });
           }else{
-            $this.find('.transition-box').css(direction, '-100%').stop(false, true).animate({
-              top: '0%',
-              left: '0%'
-            }, settings['speed'], settings['easing'], function(){
+            var moveData = settings['vertical'] ? { top: '0%' } : { left: '0%' };
+
+            $this.find('.transition-box').css(direction, '-100%').stop(false, true).animate(
+              moveData, settings['speed'], settings['easing'], function(){
               $currentItem.removeClass('show');
 
               if (settings['loop'] && toShowIndex === 0){
@@ -462,17 +517,12 @@
                 $this.find('.item:eq(' + ($this.find('.item').length - 2) + ')').addClass('show');
               }
 
-              if (settings['onAfterShow'] && $.isFunction(settings['onAfterShow'])){
-                settings['onAfterShow']($currentItem, $this.find('.item.show'));
-              }              
+              $this.trigger('afterShow', [$currentItem, $this.find('.item.show')]);          
             });
           }
 
         }else{
-
-          if (settings['onBeforeShow'] && $.isFunction(settings['onBeforeShow'])){
-            settings['onBeforeShow']($currentItem, $toShowItem);
-          }
+          $this.trigger('beforeShow', [$currentItem, $toShowItem]);
 
           $currentItem.stop(true,true).fadeOut(settings['speed'], settings['easing'], function(){
             $(this).removeClass('show');
@@ -480,11 +530,7 @@
 
           $toShowItem.stop(true,true).fadeIn(settings['speed'], settings['easing'], function(){
             $(this).addClass('show');
-
-            if (settings['onAfterShow'] && $.isFunction(settings['onAfterShow'])){
-              settings['onAfterShow']($currentItem, $toShowItem);
-            }
-
+            $this.trigger('afterShow', [$currentItem, $toShowItem]);
           });
         }
 
