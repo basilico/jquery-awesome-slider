@@ -26,7 +26,9 @@
       'easing'        : 'easeInOutExpo',
       'slideshow'     : 0,
       'gallery'       : false, //{ 'stretch' : false, 'fluid' : false },
-      'swipe'         : false
+      'swipe'         : false,
+      'onBeforeShow'  : false,
+      'onAfterShow'   : false
   };
 
   var $this;
@@ -417,6 +419,20 @@
           
           $toShowItem.addClass('show');
 
+          if (settings['onBeforeShow'] && $.isFunction(settings['onBeforeShow'])){
+            var $toShowItemBefore = $toShowItem;
+
+            if (settings['loop'] && toShowIndex === itemLength - 1){
+              $toShowItemBefore = $this.find('.item:eq(1)');
+            }
+
+            if (settings['loop'] && toShowIndex === 0){
+              $toShowItemBefore = $this.find('.item:eq(' + ($this.find('.item').length - 2) + ')');
+            }
+
+            settings['onBeforeShow']($currentItem, $toShowItemBefore);
+          }
+
           if(toShowIndex > currentIndex){
             $this.find('.transition-box').stop(false,true).animate({
               top: settings['vertical'] ? '-100%' : '0%',
@@ -428,6 +444,10 @@
               if (settings['loop'] && toShowIndex === itemLength - 1){
                 $toShowItem.removeClass('show');
                 $this.find('.item:eq(1)').addClass('show');
+              }
+
+              if (settings['onAfterShow'] && $.isFunction(settings['onAfterShow'])){
+                settings['onAfterShow']($currentItem, $this.find('.item.show'));
               }
             });
           }else{
@@ -441,16 +461,30 @@
                 $toShowItem.removeClass('show');
                 $this.find('.item:eq(' + ($this.find('.item').length - 2) + ')').addClass('show');
               }
+
+              if (settings['onAfterShow'] && $.isFunction(settings['onAfterShow'])){
+                settings['onAfterShow']($currentItem, $this.find('.item.show'));
+              }              
             });
           }
 
         }else{
+
+          if (settings['onBeforeShow'] && $.isFunction(settings['onBeforeShow'])){
+            settings['onBeforeShow']($currentItem, $toShowItem);
+          }
+
           $currentItem.stop(true,true).fadeOut(settings['speed'], settings['easing'], function(){
             $(this).removeClass('show');
           });
 
           $toShowItem.stop(true,true).fadeIn(settings['speed'], settings['easing'], function(){
             $(this).addClass('show');
+
+            if (settings['onAfterShow'] && $.isFunction(settings['onAfterShow'])){
+              settings['onAfterShow']($currentItem, $toShowItem);
+            }
+
           });
         }
 
