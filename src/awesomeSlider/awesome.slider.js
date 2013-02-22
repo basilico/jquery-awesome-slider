@@ -30,7 +30,8 @@
       'onBeforeShow'  : false,
       'onAfterShow'   : false,
       'tabs'          : false,
-      'hashchange'    : false
+      'hashchange'    : false,
+      'routes'        : false
   };
 
   var $this;
@@ -547,7 +548,7 @@
     } else if (typeof method === 'object' || ! method) {
       return methods.init.apply(this, arguments);
     } else {
-      $.error('Method ' +  method + ' does not exist on jQuery.tooltip');
+      $.error('Method ' +  method + ' does not exist on awesome slider');
     }  
   };
 
