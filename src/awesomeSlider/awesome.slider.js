@@ -31,6 +31,7 @@
       'onAfterShow'   : false,
       'tabs'          : false,
       'hashchange'    : false,
+      'randomStart'   : false,
       'routes'        : false
   };
 
@@ -108,6 +109,9 @@
           if (settings['loop']){ 
             imagesFirstLoad.push($firstItem.next().next());
             imagesFirstLoad.push($items.last().prev());  
+          }
+          if (settings['randomStart']){
+            imagesFirstLoad.push($this.find('.item.show'));
           }
         }
 
@@ -213,11 +217,28 @@
 
         $this.wrapInner('<div class="transition-box" />');
 
-        $this.find('.item:eq(' + (settings['loop'] ? 1 : 0) + ')').addClass('show');
+        if (!settings['randomStart']){
+          $this.find('.item:eq(' + (settings['loop'] ? 1 : 0) + ')').addClass('show');
+        }else{
+          var randStart = settings['loop'] ? 1 : 0;
+          var randEnd = settings['loop'] ? $this.find('.item').length - 2 : $this.find('.item').length - 1;
+          var randIndex = Math.floor(Math.random() * (randEnd - randStart + 1)) + randStart;
+          $this.find('.item:eq(' + randIndex + ')').addClass('show');
+        }
+
       }else{
         /* hide all elements but not the first*/
         $this.find('.item:gt(0)').hide();
-        $this.find('.item:first').addClass('show');
+
+        if (!settings['randomStart']){
+          $this.find('.item:first').addClass('show');
+        }else{
+          var randStart = settings['loop'] ? 1 : 0;
+          var randEnd = settings['loop'] ? $this.find('.item').length - 2 : $this.find('.item').length - 1;
+          var randIndex = Math.floor(Math.random() * (randEnd - randStart + 1)) + randStart;
+          $this.find('.item:eq(' + randIndex + ')').addClass('show').show();
+        }
+
       }
 
       $items = $this.find('.item');
