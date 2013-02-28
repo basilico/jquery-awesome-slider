@@ -206,6 +206,7 @@
       }
 
       /* set up slider when transition value is set to "slide" */
+      var indexStartShow = 0;
       if (settings['transition'] === 'slide'){
 
         if (settings['loop']){
@@ -213,34 +214,30 @@
           var $lastItemClone = $this.find('.item:last').clone();
           $this.append($firstItemClone);
           $this.prepend($lastItemClone);
+          indexStartShow = 1;
         }
 
         $this.wrapInner('<div class="transition-box" />');
 
-        if (!settings['randomStart']){
-          $this.find('.item:eq(' + (settings['loop'] ? 1 : 0) + ')').addClass('show');
-        }else{
+        if (settings['randomStart']){          
           var randStart = settings['loop'] ? 1 : 0;
           var randEnd = settings['loop'] ? $this.find('.item').length - 2 : $this.find('.item').length - 1;
-          var randIndex = Math.floor(Math.random() * (randEnd - randStart + 1)) + randStart;
-          $this.find('.item:eq(' + randIndex + ')').addClass('show');
+          indexStartShow = Math.floor(Math.random() * (randEnd - randStart + 1)) + randStart;
         }
 
       }else{
         /* hide all elements but not the first*/
         $this.find('.item:gt(0)').hide();
 
-        if (!settings['randomStart']){
-          $this.find('.item:first').addClass('show');
-        }else{
-          var randStart = settings['loop'] ? 1 : 0;
-          var randEnd = settings['loop'] ? $this.find('.item').length - 2 : $this.find('.item').length - 1;
-          var randIndex = Math.floor(Math.random() * (randEnd - randStart + 1)) + randStart;
-          $this.find('.item:eq(' + randIndex + ')').addClass('show').show();
+        if (settings['randomStart']){
+          var randStart =  0;
+          var randEnd = $this.find('.item').length - 1;
+          indexStartShow = Math.floor(Math.random() * (randEnd - randStart + 1)) + randStart;
+          $this.find('.item:eq(' + indexStartShow + ')').show();
         }
-
       }
 
+      $this.find('.item:eq(' + indexStartShow + ')').addClass('show');
       $items = $this.find('.item');
 
       if (settings['tabs']){
@@ -286,6 +283,13 @@
         $this.on('afterShow', function(e, $previous, $current){
           settings['onAfterShow']($previous, $current);          
         });
+      }
+
+      if (settings['onStart'] && $.isFunction(settings['onStart'])){
+        $this.on('onStart', function(e, $current){
+          settings['onStart']($current);          
+        });
+        $this.trigger('onStart', [$this.find('.item.show')]);  
       }
     },
 

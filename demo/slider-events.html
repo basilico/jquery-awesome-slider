@@ -28,6 +28,7 @@
       <div class="item"><img src="images/slide-5.jpg" alt="" /></div>
     </div>
 
+    <p id="start">Start show Message:<br/> <span></span></p>
     <p id="before">Before show Message:<br/> <span></span></p>
     <p id="after">After show Message:<br/> <span></span> </p>
 
@@ -41,6 +42,10 @@
     $('#slider').awesomeSlider({
       'loop' : true,
       'speed' : 1000,
+      'onStart' : function($current){
+        $('#start span').html('<b>Start:</b> ' + $current.find('img').attr('src'));
+      },
+
       'onBeforeShow' : function($current, $next){
         $('#before span').html('<b>Current:</b> ' + $current.find('img').attr('src') + '<br/><b>Next:</b> ' + $next.find('img').attr('src'));
       },
