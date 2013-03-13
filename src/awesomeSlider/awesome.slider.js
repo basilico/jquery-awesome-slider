@@ -310,7 +310,7 @@
         if (settings['transition'] === 'slide' && $this.find('.transition-box').is(':animated')){ return; }
         if (settings['transition'] === 'fade' && $this.find('.item.show').is(':animated')){ return; }
 
-        if (timerSlideshow !== null){ clearTimeout(timerSlideshow); }
+        if (timerSlideshow !== null){ methods.clearSlideShow(); }
 
         $arrow = $(this);
         currentIndex = $items.index($this.find('.item.show'));
@@ -358,7 +358,7 @@
             if (settings['transition'] === 'slide' && $this.find('.transition-box').is(':animated')){ return; }
             if (settings['transition'] === 'fade' && $this.find('.item.show').is(':animated')){ return; }
 
-            if (timerSlideshow !== null){ clearTimeout(timerSlideshow); }
+            if (timerSlideshow !== null){ methods.clearSlideShow(); }
 
             $bulletsContainer.find('a.selected').removeClass('selected');
             $(this).addClass('selected');
@@ -384,7 +384,7 @@
           if (settings['transition'] === 'slide' && $this.find('.transition-box').is(':animated')){ return; }
           if (settings['transition'] === 'fade' && $this.find('.item.show').is(':animated')){ return; }
 
-          if (timerSlideshow !== null){ clearTimeout(timerSlideshow); }
+          if (timerSlideshow !== null){ methods.clearSlideShow(); }
 
           $tabsContainer.find('a.selected').removeClass('selected');
           $(this).addClass('selected');
@@ -394,7 +394,7 @@
     },
 
     createSlideShow: function(){
-      if (timerSlideshow !== null){ clearTimeout(timerSlideshow); }
+      if (timerSlideshow !== null){ methods.clearSlideShow(); }
 
       timerSlideshow = setTimeout(function(){
         var currentIndex, toShowIndex;
@@ -423,6 +423,10 @@
       }, settings['slideshow']);
     },
 
+    clearSlideShow: function(){
+      if (timerSlideshow !== null){ clearTimeout(timerSlideshow); }
+    },
+
     addSwipeListener: function(){
       $this.hammer().bind("swipe", function(ev) {
 
@@ -433,7 +437,7 @@
         if (settings['transition'] === 'fade' && $this.find('.item.show').is(':animated')){ return; }
 
         if (ev.direction === directions[0] || ev.direction  === directions[1]) {
-          if (timerSlideshow !== null){ clearTimeout(timerSlideshow); }
+          if (timerSlideshow !== null){ methods.clearSlideShow(); }
 
           currentIndex = $items.index($this.find('.item.show'));
 
@@ -471,7 +475,7 @@
       $(window).hashchange(function(){
         if ($this.find(location.hash).length > 0){
           var toShowIndex = $items.index($this.find(location.hash));
-          if (timerSlideshow !== null){ clearTimeout(timerSlideshow); }
+          if (timerSlideshow !== null){ methods.clearSlideShow(); }
           methods.showItem(toShowIndex);
         }
       }).hashchange();
