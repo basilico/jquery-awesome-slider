@@ -424,7 +424,14 @@
     },
 
     clearSlideShow: function(){
-      if (timerSlideshow !== null){ clearTimeout(timerSlideshow); }
+      if (timerSlideshow !== null){ 
+        clearTimeout(timerSlideshow); 
+        timerSlideshow = null; 
+      }
+    },
+
+    isSlideShowActive: function(){
+      return timerSlideshow !== null;
     },
 
     addSwipeListener: function(){
